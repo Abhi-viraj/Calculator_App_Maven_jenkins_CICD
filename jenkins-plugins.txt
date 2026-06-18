@@ -1,6 +1,6 @@
 # ════════════════════════════════════════════════════════════════
 #  jenkins-plugins.txt
-#  List of Jenkins plugins required for the CI_FancyStore pipeline
+#  List of Jenkins plugins required for the Calculator_web_app pipeline
 # ════════════════════════════════════════════════════════════════
 #
 #  HOW TO INSTALL ALL PLUGINS VIA JENKINS CLI:
