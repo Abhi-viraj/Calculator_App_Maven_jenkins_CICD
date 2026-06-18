@@ -1,0 +1,220 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<!--
+  ════════════════════════════════════════════════════════════════
+  Jenkins Job Configuration  –  CI_FancyStore  (Maven Project)
+  ════════════════════════════════════════════════════════════════
+  HOW TO IMPORT THIS FILE INTO JENKINS:
+  ---------------------------------------------------------------
+  Option A (CLI) — run on your EC2:
+      sudo cp config.xml \
+        /var/lib/jenkins/jobs/CI_FancyStore/config.xml
+      sudo chown jenkins:jenkins \
+        /var/lib/jenkins/jobs/CI_FancyStore/config.xml
+      # Then reload Jenkins config:
+      curl -X POST http://localhost:8080/reload \
+        --user admin:<YOUR_JENKINS_PASSWORD>
+
+  Option B (UI) — Jenkins → New Item → CI_FancyStore →
+      Maven project → OK → then hand-configure using
+      the sections below as your guide.
+  ════════════════════════════════════════════════════════════════
+-->
+<maven2-moduleset plugin="maven-plugin@3.23">
+
+  <!-- ── BASIC INFO ─────────────────────────────────────────── -->
+  <description>
+    CI Pipeline: GitHub SCM → Maven build → SonarQube analysis
+    → JaCoCo coverage → JFrog Artifactory release → Tomcat deploy
+  </description>
+  <keepDependencies>false</keepDependencies>
+
+  <!-- ── BUILD HISTORY CLEANUP ──────────────────────────────── -->
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <!-- Keep last 5 builds only -->
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <!-- Allows GitHub webhook to trigger this job -->
+    <com.coravy.hudson.plugins.github.GithubProjectProperty
+        plugin="github@1.37.3">
+      <!-- ⚠️  Replace YOUR_GITHUB_USERNAME -->
+      <projectUrl>
+        https://github.com/YOUR_GITHUB_USERNAME/FancyStore/
+      </projectUrl>
+      <displayName/>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+  </properties>
+
+  <!-- ── SOURCE CODE MANAGEMENT (GitHub) ───────────────────── -->
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@5.2.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <!-- ⚠️  Replace YOUR_GITHUB_USERNAME -->
+        <url>
+          https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+        </url>
+        <!--
+          'github-creds' must exist in Jenkins Credentials store.
+          Add it via:
+          Manage Jenkins → Credentials → (global) → Add Credentials
+            Kind     : Username with password
+            Username : your GitHub username
+            Password : your GitHub Personal Access Token
+            ID       : github-creds
+        -->
+        <credentialsId>github-creds</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <!-- Watch the main branch -->
+        <name>*/main</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="empty-list"/>
+    <extensions/>
+  </scm>
+
+  <!-- ── BUILD TRIGGERS ────────────────────────────────────── -->
+  <triggers>
+    <!--
+      GitHub sends a POST to:
+        http://<EC2-IP>:8080/github-webhook/
+      whenever code is pushed.  Jenkins sees it here.
+    -->
+    <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
+      <spec/>
+    </com.cloudbees.jenkins.GitHubPushTrigger>
+  </triggers>
+
+  <!-- ── BUILD ENVIRONMENT ─────────────────────────────────── -->
+  <buildWrappers>
+    <!--
+      Injects SONAR_HOST_URL and SONAR_AUTH_TOKEN as env-vars
+      so the sonar:sonar goal can connect automatically.
+      Requires "SonarQube Scanner" plugin + server configured in
+      Manage Jenkins → System → SonarQube servers (name: SonarQube)
+    -->
+    <hudson.plugins.sonar.SonarBuildWrapper
+        plugin="sonar@2.17.2"/>
+  </buildWrappers>
+
+  <!-- ── MAVEN BUILD ───────────────────────────────────────── -->
+  <!--
+    'Maven3' must exist in:
+    Manage Jenkins → Tools → Maven installations → name: Maven3
+  -->
+  <mavenName>Maven3</mavenName>
+  <rootPOM>pom.xml</rootPOM>
+
+  <!--
+    GOAL ORDER (left→right):
+      clean      – delete previous build output
+      compile    – compile Java sources
+      test       – run JUnit tests + JaCoCo agent collects data
+      verify     – JaCoCo generates XML/HTML coverage report
+      package    – create FancyStore.war
+      sonar:sonar– send results to SonarQube server
+
+    ❌  'deploy' is intentionally NOT here.
+        Artifact upload is handled by the JFrog post-build action.
+  -->
+  <goals>
+    clean compile test verify package sonar:sonar
+  </goals>
+
+  <!-- Pass SonarQube server name so the plugin resolves the URL -->
+  <mavenOpts>
+    -Dsonar.host.url=${SONAR_HOST_URL}
+    -Dsonar.login=${SONAR_AUTH_TOKEN}
+  </mavenOpts>
+
+  <!-- ── PRE-BUILD STEPS ───────────────────────────────────── -->
+  <prebuilders/>   <!-- SonarQube env injection is via buildWrapper above -->
+
+  <!-- ── POST-BUILD ACTIONS ────────────────────────────────── -->
+  <publishers>
+
+    <!-- ① JaCoCo Coverage Report ──────────────────────────── -->
+    <!--
+      Reads target/site/jacoco/ and displays a coverage graph
+      on the Jenkins job page.
+    -->
+    <hudson.plugins.jacoco.JacocoPublisher plugin="jacoco@3.3.6">
+      <execPattern>**/**.exec</execPattern>
+      <classPattern>**/classes</classPattern>
+      <sourcePattern>**/src/main/java</sourcePattern>
+      <exclusionPattern>
+        **/test/**,**/generated/**
+      </exclusionPattern>
+      <skipCopyLocalArtifacts>false</skipCopyLocalArtifacts>
+      <changeBuildStatus>false</changeBuildStatus>
+      <minimumInstructionCoverage>0</minimumInstructionCoverage>
+      <minimumBranchCoverage>0</minimumBranchCoverage>
+      <minimumComplexityCoverage>0</minimumComplexityCoverage>
+      <minimumLineCoverage>0</minimumLineCoverage>
+      <minimumMethodCoverage>0</minimumMethodCoverage>
+      <minimumClassCoverage>0</minimumClassCoverage>
+    </hudson.plugins.jacoco.JacocoPublisher>
+
+    <!-- ② Deploy WAR to JFrog Artifactory ─────────────────── -->
+    <!--
+      Requires:
+        • "Artifactory" plugin installed
+        • Server configured in Manage Jenkins → System → JFrog
+          (Instance ID must match: artifactory-server)
+        • A local Maven repo named 'libs-release-local' in JFrog
+    -->
+    <org.jfrog.hudson.maven3.ArtifactoryMaven3Configurator
+        plugin="artifactory@3.23.0">
+      <deployArtifacts>true</deployArtifacts>
+      <artifactoryName>artifactory-server</artifactoryName>
+      <releaseRepoKey>libs-release-local</releaseRepoKey>
+      <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
+      <deployBuildInfo>true</deployBuildInfo>
+      <includeEnvVars>false</includeEnvVars>
+      <discardOldBuilds>false</discardOldBuilds>
+      <discardBuildArtifacts>true</discardBuildArtifacts>
+      <!-- Deploy only the FancyStore.war, not sources/javadoc jars -->
+      <artifactDeploymentPatterns>
+        <includePatterns>**/FancyStore.war</includePatterns>
+        <excludePatterns/>
+      </artifactDeploymentPatterns>
+    </org.jfrog.hudson.maven3.ArtifactoryMaven3Configurator>
+
+    <!-- ③ Deploy WAR to Apache Tomcat ─────────────────────── -->
+    <!--
+      Requires "Deploy to container" plugin.
+      Tomcat must be running on port 8090 with manager-script role.
+      tomcat-creds must exist in Jenkins:
+        Manage Jenkins → Credentials → Add →
+          Username: deployer  Password: deployer123  ID: tomcat-creds
+    -->
+    <hudson.plugins.deploy.DeployPublisher plugin="deploy@1.21">
+      <adapters>
+        <hudson.plugins.deploy.tomcat.Tomcat9xAdapter>
+          <url>http://localhost:8090/manager/text</url>
+          <credentialsId>tomcat-creds</credentialsId>
+        </hudson.plugins.deploy.tomcat.Tomcat9xAdapter>
+      </adapters>
+      <!-- WAR file produced by maven package goal -->
+      <warFile>target/FancyStore.war</warFile>
+      <!-- Context path: app accessible at /FancyStore -->
+      <contextPath>FancyStore</contextPath>
+      <onFailure>false</onFailure>
+    </hudson.plugins.deploy.DeployPublisher>
+
+  </publishers>
+
+  <!-- ── MISC ──────────────────────────────────────────────── -->
+  <runHeadless>false</runHeadless>
+  <disableTriggerDownstreamProjects>false</disableTriggerDownstreamProjects>
+  <blockTriggerWhenBuilding>true</blockTriggerWhenBuilding>
+</maven2-moduleset>

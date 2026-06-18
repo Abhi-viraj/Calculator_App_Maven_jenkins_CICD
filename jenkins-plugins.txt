@@ -1,0 +1,56 @@
+# ════════════════════════════════════════════════════════════════
+#  jenkins-plugins.txt
+#  List of Jenkins plugins required for the CI_FancyStore pipeline
+# ════════════════════════════════════════════════════════════════
+#
+#  HOW TO INSTALL ALL PLUGINS VIA JENKINS CLI:
+#  -----------------------------------------------------------
+#  1. Download Jenkins CLI jar:
+#       wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+#
+#  2. Install all plugins in this file at once:
+#       java -jar jenkins-cli.jar \
+#         -s http://localhost:8080 \
+#         -auth admin:<YOUR_PASSWORD> \
+#         install-plugin $(cat jenkins-plugins.txt | \
+#           grep -v '^#' | grep -v '^$' | tr '\n' ' ')
+#
+#  3. Restart Jenkins:
+#       java -jar jenkins-cli.jar \
+#         -s http://localhost:8080 \
+#         -auth admin:<YOUR_PASSWORD> \
+#         safe-restart
+#
+#  OR install manually via UI:
+#    Manage Jenkins → Plugins → Available → search each name
+# ════════════════════════════════════════════════════════════════
+
+# ── Source Control ────────────────────────────────────────────
+git
+github
+
+# ── Maven Build Support ───────────────────────────────────────
+maven-plugin
+
+# ── SonarQube Integration ─────────────────────────────────────
+sonar
+
+# ── Code Coverage ─────────────────────────────────────────────
+jacoco
+
+# ── JFrog Artifactory ─────────────────────────────────────────
+artifactory
+
+# ── Deploy to Tomcat ──────────────────────────────────────────
+deploy
+
+# ── Credentials Management ────────────────────────────────────
+credentials
+credentials-binding
+plain-credentials
+
+# ── Useful UI / Reporting ─────────────────────────────────────
+build-timeout
+timestamper
+ws-cleanup
+junit

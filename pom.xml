@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ─────────────────────────────────────────────
+         PROJECT IDENTITY
+         ───────────────────────────────────────────── -->
+    <groupId>com.fancystore</groupId>
+    <artifactId>FancyStore</artifactId>
+    <packaging>war</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>FancyStore Calculator Web App</name>
+    <description>
+        Calculator Web App – CI/CD via Jenkins, SonarQube, JFrog Artifactory, Tomcat
+    </description>
+
+    <!-- ─────────────────────────────────────────────
+         SOURCE CONTROL
+         ───────────────────────────────────────────── -->
+    <scm>
+        <!-- ⚠️  Replace YOUR_GITHUB_USERNAME with your actual GitHub username -->
+        <connection>
+            scm:git:https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+        </connection>
+        <developerConnection>
+            scm:git:https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+        </developerConnection>
+        <url>https://github.com/YOUR_GITHUB_USERNAME/FancyStore</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <!-- ─────────────────────────────────────────────
+         GLOBAL PROPERTIES
+         ───────────────────────────────────────────── -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Java version -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!-- Jersey REST framework -->
+        <jersey-version>2.27</jersey-version>
+
+        <!-- ── SonarQube settings ──────────────────
+             These tell SonarQube WHERE the Jacoco
+             XML report lives so it can show coverage.
+             ───────────────────────────────────────── -->
+        <sonar.projectKey>FancyStore</sonar.projectKey>
+        <sonar.projectName>FancyStore</sonar.projectName>
+        <sonar.projectVersion>${project.version}</sonar.projectVersion>
+        <sonar.sources>src/main/java</sonar.sources>
+        <sonar.tests>src/test/java</sonar.tests>
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+        <!-- Path to Jacoco XML report generated during verify phase -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <!-- Exclude auto-generated / framework classes from coverage -->
+        <sonar.exclusions>
+            **/CalculatorResponse.java
+        </sonar.exclusions>
+    </properties>
+
+    <!-- ─────────────────────────────────────────────
+         DEPENDENCIES
+         ───────────────────────────────────────────── -->
+    <dependencies>
+
+        <!-- Jersey JAX-RS (REST API) -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+
+        <!-- JUnit for unit tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Apache HTTP client for integration tests -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Maven resources plugin -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ─────────────────────────────────────────────
+         BUILD
+         ───────────────────────────────────────────── -->
+    <build>
+        <!-- WAR file will be named  FancyStore.war -->
+        <finalName>FancyStore</finalName>
+
+        <plugins>
+
+            <!-- ── 1. Compiler ──────────────────── -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <!-- ── 2. WAR packager ──────────────── -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <!-- No web.xml validation failure if file is minimal -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+
+            <!-- ── 3. Surefire (Unit Tests) ─────── -->
+            <!--
+                Runs all *Test.java files during the "test" phase.
+                Jacoco agent is injected automatically via the Jacoco plugin below.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <!-- Exclude integration tests from unit-test phase -->
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- ── 4. JaCoCo (Code Coverage) ───────
+                 Phase breakdown:
+                   prepare-agent  → injects byte-code
+                                    instrumentation BEFORE tests run
+                   report         → creates HTML + XML coverage
+                                    report AFTER verify phase
+                 Jenkins "Record JaCoCo Coverage Report"
+                 post-build action reads the XML automatically.
+                 SonarQube reads it via sonar.coverage.jacoco.xmlReportPaths
+                 property set above.
+            ─────────────────────────────────────── -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+
+                    <!-- Step A: inject agent before unit tests -->
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+
+                    <!-- Step B: generate XML + HTML report after verify -->
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/site/jacoco</outputDirectory>
+                        </configuration>
+                    </execution>
+
+                    <!-- Step C: enforce minimum coverage (optional gate) -->
+                    <!--
+                    <execution>
+                        <id>jacoco-check</id>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.50</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                    -->
+
+                </executions>
+            </plugin>
+
+            <!-- ── 5. Jetty (for integration tests) ─
+                 Starts an embedded server during
+                 pre-integration-test so *IT.java tests
+                 can hit real HTTP endpoints.
+                 Stops after post-integration-test.
+            ─────────────────────────────────────── -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.4.54.v20240208</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/calculator</contextPath>
+                    </webApp>
+                    <stopPort>8079</stopPort>
+                    <stopKey>stop-jetty</stopKey>
+                    <stopWait>10</stopWait>
+                    <httpConnector>
+                        <port>9999</port>
+                        <idleTimeout>60000</idleTimeout>
+                    </httpConnector>
+                </configuration>
+            </plugin>
+
+            <!-- ── 6. Maven Site ─────────────────── -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.1</version>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- ─────────────────────────────────────────────
+         REPORTING  (mvn site generates these pages)
+         ───────────────────────────────────────────── -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.4.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.1.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+
+</project>
