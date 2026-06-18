@@ -44,7 +44,7 @@
         plugin="github@1.37.3">
       <!-- ⚠️  Replace YOUR_GITHUB_USERNAME -->
       <projectUrl>
-        https://github.com/YOUR_GITHUB_USERNAME/FancyStore/
+        https://github.com/Abhi-viraj/FancyStore/
       </projectUrl>
       <displayName/>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
@@ -57,7 +57,7 @@
       <hudson.plugins.git.UserRemoteConfig>
         <!-- ⚠️  Replace YOUR_GITHUB_USERNAME -->
         <url>
-          https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+          https://Abhi-viraj/FancyStore.git
         </url>
         <!--
           'github-creds' must exist in Jenkins Credentials store.
