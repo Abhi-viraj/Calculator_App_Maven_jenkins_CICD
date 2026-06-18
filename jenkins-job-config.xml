@@ -1,20 +1,20 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <!--
   ════════════════════════════════════════════════════════════════
-  Jenkins Job Configuration  –  CI_FancyStore  (Maven Project)
+  Jenkins Job Configuration  –  Calculator_web_app  (Maven Project)
   ════════════════════════════════════════════════════════════════
   HOW TO IMPORT THIS FILE INTO JENKINS:
   ---------------------------------------------------------------
   Option A (CLI) — run on your EC2:
       sudo cp config.xml \
-        /var/lib/jenkins/jobs/CI_FancyStore/config.xml
+        /var/lib/jenkins/jobs/Calculator_web_app/config.xml
       sudo chown jenkins:jenkins \
-        /var/lib/jenkins/jobs/CI_FancyStore/config.xml
+        /var/lib/jenkins/jobs/Calculator_web_app/config.xml
       # Then reload Jenkins config:
       curl -X POST http://localhost:8080/reload \
         --user admin:<YOUR_JENKINS_PASSWORD>
 
-  Option B (UI) — Jenkins → New Item → CI_FancyStore →
+  Option B (UI) — Jenkins → New Item → Calculator_web_app →
       Maven project → OK → then hand-configure using
       the sections below as your guide.
   ════════════════════════════════════════════════════════════════
