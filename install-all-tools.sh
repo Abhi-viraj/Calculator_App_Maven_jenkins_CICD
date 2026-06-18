@@ -14,7 +14,7 @@
 set -e   # stop on first error
 echo ""
 echo "╔══════════════════════════════════════════╗"
-echo "║   FancyStore CI/CD Tool Installer         ║"
+echo "║   Calculator_web_app/CD Tool Installer         ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
