@@ -9,11 +9,11 @@
     <!-- ─────────────────────────────────────────────
          PROJECT IDENTITY
          ───────────────────────────────────────────── -->
-    <groupId>com.fancystore</groupId>
-    <artifactId>FancyStore</artifactId>
+    <groupId>Calculator_web_app</groupId>
+    <artifactId>Calculator_web_app</artifactId>
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>FancyStore Calculator Web App</name>
+    <name>Calculator_web_app Calculator Web App</name>
     <description>
         Calculator Web App – CI/CD via Jenkins, SonarQube, JFrog Artifactory, Tomcat
     </description>
@@ -24,12 +24,12 @@
     <scm>
         <!-- ⚠️  Replace YOUR_GITHUB_USERNAME with your actual GitHub username -->
         <connection>
-            scm:git:https://github.com/Abhi-viraj/FancyStore.git
+            scm:git:https://github.com/Abhi-viraj/Calculator_web_app.git
         </connection>
         <developerConnection>
-            scm:git:https://github.com/Abhi-viraj/FancyStore.git
+            scm:git:https://github.com/Abhi-viraj/Calculator_web_app.git
         </developerConnection>
-        <url>https://github.com/Abhi-viraj/FancyStore</url>
+        <url>https://github.com/Abhi-viraj/Calculator_web_app</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -50,8 +50,8 @@
              These tell SonarQube WHERE the Jacoco
              XML report lives so it can show coverage.
              ───────────────────────────────────────── -->
-        <sonar.projectKey>FancyStore</sonar.projectKey>
-        <sonar.projectName>FancyStore</sonar.projectName>
+        <sonar.projectKey>Calculator_web_app</sonar.projectKey>
+        <sonar.projectName>Calculator_web_app</sonar.projectName>
         <sonar.projectVersion>${project.version}</sonar.projectVersion>
         <sonar.sources>src/main/java</sonar.sources>
         <sonar.tests>src/test/java</sonar.tests>
@@ -122,8 +122,8 @@
          BUILD
          ───────────────────────────────────────────── -->
     <build>
-        <!-- WAR file will be named  FancyStore.war -->
-        <finalName>FancyStore</finalName>
+        <!-- WAR file will be named  Calculator_web_app.war -->
+        <finalName>Calculator_web_app</finalName>
 
         <plugins>
 
