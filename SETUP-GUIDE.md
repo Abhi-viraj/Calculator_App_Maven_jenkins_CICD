@@ -1,4 +1,4 @@
-# 🚀 FancyStore CI/CD Pipeline — Complete Setup Guide
+# 🚀 Calculator_web_app Pipeline — Complete Setup Guide
 
 **Source repo:** `https://github.com/maping/java-maven-calculator-web-app`
 **Your fork:** `https://github.com/YOUR_GITHUB_USERNAME/FancyStore`
