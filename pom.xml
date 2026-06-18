@@ -24,12 +24,12 @@
     <scm>
         <!-- ⚠️  Replace YOUR_GITHUB_USERNAME with your actual GitHub username -->
         <connection>
-            scm:git:https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+            scm:git:https://github.com/Abhi-viraj/FancyStore.git
         </connection>
         <developerConnection>
-            scm:git:https://github.com/YOUR_GITHUB_USERNAME/FancyStore.git
+            scm:git:https://github.com/Abhi-viraj/FancyStore.git
         </developerConnection>
-        <url>https://github.com/YOUR_GITHUB_USERNAME/FancyStore</url>
+        <url>https://github.com/Abhi-viraj/FancyStore</url>
         <tag>HEAD</tag>
     </scm>
 
